@@ -54,7 +54,7 @@ def register():
 def login():
     if request.method == "GET":
         if session.get("user_id"):
-            return redirect(url_for("landing"))
+            return redirect(url_for("profile"))
         return render_template("login.html")
 
     email = request.form.get("email", "").strip().lower()
@@ -72,7 +72,8 @@ def login():
 
     session.clear()
     session["user_id"] = user["id"]
-    return redirect(url_for("landing"))
+    session["user_name"] = user["name"]
+    return redirect(url_for("profile"))
 
 
 @app.route("/terms")
@@ -97,7 +98,48 @@ def logout():
 
 @app.route("/profile")
 def profile():
-    return "Profile page — coming in Step 4"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    user = {
+        "name": "Demo User",
+        "email": "demo@spendly.com",
+        "initials": "DU",
+        "member_since": "January 2026",
+    }
+
+    stats = {
+        "total_spent": 289.84,
+        "transaction_count": 6,
+        "top_category": "Food",
+    }
+
+    transactions = [
+        {"date": "2026-08-18", "description": "Dinner with friends", "category": "Food", "amount": 32.40},
+        {"date": "2026-08-15", "description": "Miscellaneous", "category": "Other", "amount": 9.00},
+        {"date": "2026-08-12", "description": "New shoes", "category": "Shopping", "amount": 60.20},
+        {"date": "2026-08-08", "description": "Movie tickets", "category": "Entertainment", "amount": 15.75},
+        {"date": "2026-08-05", "description": "Pharmacy", "category": "Health", "amount": 25.00},
+        {"date": "2026-08-03", "description": "Electricity bill", "category": "Bills", "amount": 89.99},
+    ]
+
+    category_breakdown = [
+        {"category": "Bills", "amount": 89.99, "percent": 31, "css_class": "bar-bills"},
+        {"category": "Shopping", "amount": 60.20, "percent": 21, "css_class": "bar-shopping"},
+        {"category": "Transport", "amount": 45.00, "percent": 16, "css_class": "bar-transport"},
+        {"category": "Food", "amount": 44.90, "percent": 15, "css_class": "bar-food"},
+        {"category": "Health", "amount": 25.00, "percent": 9, "css_class": "bar-health"},
+        {"category": "Entertainment", "amount": 15.75, "percent": 5, "css_class": "bar-entertainment"},
+        {"category": "Other", "amount": 9.00, "percent": 3, "css_class": "bar-other"},
+    ]
+
+    return render_template(
+        "profile.html",
+        user=user,
+        stats=stats,
+        transactions=transactions,
+        category_breakdown=category_breakdown,
+    )
 
 
 @app.route("/expenses/add")

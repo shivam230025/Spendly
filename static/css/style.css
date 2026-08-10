@@ -765,6 +765,13 @@ a { color: inherit; text-decoration: none; }
     margin-bottom: 1rem;
 }
 
+.profile-history-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
 .profile-table-wrap {
     background: var(--paper-card);
     border: 1px solid var(--border);
@@ -803,6 +810,8 @@ a { color: inherit; text-decoration: none; }
     font-weight: 500;
     color: var(--ink);
 }
+
+.profile-history-col { min-width: 0; }
 
 .profile-breakdown-card { margin-bottom: 2.5rem; }
 
@@ -847,6 +856,7 @@ a { color: inherit; text-decoration: none; }
     .features-inner { grid-template-columns: 1fr; }
 
     .profile-stats-row { grid-template-columns: 1fr; }
+    .profile-history-row { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {

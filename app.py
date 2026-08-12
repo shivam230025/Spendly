@@ -1,9 +1,20 @@
 import sqlite3
+from datetime import datetime
 
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from database.db import get_db, init_db, seed_db, create_user, get_user_by_email
+from database.db import (
+    get_db,
+    init_db,
+    seed_db,
+    create_user,
+    get_user_by_email,
+    get_user_by_id,
+    get_expenses_by_user,
+    get_expense_stats,
+    get_category_breakdown,
+)
 
 app = Flask(__name__)
 app.secret_key = "dev-secret-key-change-in-production"
@@ -96,41 +107,45 @@ def logout():
     return redirect(url_for("landing"))
 
 
+def _initials_from_name(name):
+    parts = name.split()
+    if not parts:
+        return ""
+    if len(parts) == 1:
+        return parts[0][0].upper()
+    return (parts[0][0] + parts[-1][0]).upper()
+
+
+def _format_member_since(created_at):
+    return datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
+
+
 @app.route("/profile")
 def profile():
     if not session.get("user_id"):
         return redirect(url_for("login"))
 
+    user_id = session["user_id"]
+    db_user = get_user_by_id(user_id)
+
     user = {
-        "name": "Demo User",
-        "email": "demo@spendly.com",
-        "initials": "DU",
-        "member_since": "January 2026",
+        "name": db_user["name"],
+        "email": db_user["email"],
+        "initials": _initials_from_name(db_user["name"]),
+        "member_since": _format_member_since(db_user["created_at"]),
     }
 
-    stats = {
-        "total_spent": 289.84,
-        "transaction_count": 6,
-        "top_category": "Food",
-    }
-
+    expense_rows = get_expenses_by_user(user_id)
+    stats = get_expense_stats(expense_rows)
+    category_breakdown = get_category_breakdown(expense_rows)
     transactions = [
-        {"date": "2026-08-18", "description": "Dinner with friends", "category": "Food", "amount": 32.40},
-        {"date": "2026-08-15", "description": "Miscellaneous", "category": "Other", "amount": 9.00},
-        {"date": "2026-08-12", "description": "New shoes", "category": "Shopping", "amount": 60.20},
-        {"date": "2026-08-08", "description": "Movie tickets", "category": "Entertainment", "amount": 15.75},
-        {"date": "2026-08-05", "description": "Pharmacy", "category": "Health", "amount": 25.00},
-        {"date": "2026-08-03", "description": "Electricity bill", "category": "Bills", "amount": 89.99},
-    ]
-
-    category_breakdown = [
-        {"category": "Bills", "amount": 89.99, "percent": 31, "css_class": "bar-bills"},
-        {"category": "Shopping", "amount": 60.20, "percent": 21, "css_class": "bar-shopping"},
-        {"category": "Transport", "amount": 45.00, "percent": 16, "css_class": "bar-transport"},
-        {"category": "Food", "amount": 44.90, "percent": 15, "css_class": "bar-food"},
-        {"category": "Health", "amount": 25.00, "percent": 9, "css_class": "bar-health"},
-        {"category": "Entertainment", "amount": 15.75, "percent": 5, "css_class": "bar-entertainment"},
-        {"category": "Other", "amount": 9.00, "percent": 3, "css_class": "bar-other"},
+        {
+            "date": row["date"],
+            "description": row["description"],
+            "category": row["category"],
+            "amount": row["amount"],
+        }
+        for row in expense_rows
     ]
 
     return render_template(

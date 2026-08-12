@@ -62,6 +62,62 @@ def get_user_by_email(email):
         conn.close()
 
 
+def get_user_by_id(user_id):
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT * FROM users WHERE id = ?", (user_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def get_expenses_by_user(user_id):
+    conn = get_db()
+    try:
+        return conn.execute(
+            "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC", (user_id,)
+        ).fetchall()
+    finally:
+        conn.close()
+
+
+def get_expense_stats(expenses):
+    total_spent = sum(row["amount"] for row in expenses)
+    transaction_count = len(expenses)
+    totals_by_category = {}
+    for row in expenses:
+        totals_by_category[row["category"]] = totals_by_category.get(row["category"], 0.0) + row["amount"]
+    top_category = (
+        max(sorted(totals_by_category), key=lambda c: totals_by_category[c])
+        if totals_by_category else ""
+    )
+    return {
+        "total_spent": total_spent,
+        "transaction_count": transaction_count,
+        "top_category": top_category,
+    }
+
+
+def get_category_breakdown(expenses):
+    total_spent = sum(row["amount"] for row in expenses)
+    if total_spent == 0:
+        return []
+    totals_by_category = {}
+    for row in expenses:
+        totals_by_category[row["category"]] = totals_by_category.get(row["category"], 0.0) + row["amount"]
+    breakdown = []
+    for category in sorted(totals_by_category, key=lambda c: (-totals_by_category[c], c)):
+        amount = totals_by_category[category]
+        breakdown.append({
+            "category": category,
+            "amount": amount,
+            "percent": round(amount / total_spent * 100),
+            "css_class": "bar-" + category.lower(),
+        })
+    return breakdown
+
+
 def seed_db():
     conn = get_db()
     existing = conn.execute("SELECT COUNT(*) FROM users").fetchone()[0]

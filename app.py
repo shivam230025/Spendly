@@ -1,5 +1,5 @@
 import sqlite3
-from datetime import datetime
+from datetime import datetime, date, timedelta
 
 from flask import Flask, render_template, request, redirect, url_for, flash, abort, session
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -120,6 +120,41 @@ def _format_member_since(created_at):
     return datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S").strftime("%B %Y")
 
 
+def _resolve_date_range(args):
+    range_value = args.get("range", "")
+
+    if range_value == "this_month":
+        today = date.today()
+        start = today.replace(day=1).isoformat()
+        end = today.isoformat()
+        return start, end, {"range": "this_month", "start_date": "", "end_date": ""}
+
+    if range_value in ("3m", "6m"):
+        days = 90 if range_value == "3m" else 180
+        today = date.today()
+        start = (today - timedelta(days=days)).isoformat()
+        end = today.isoformat()
+        return start, end, {"range": range_value, "start_date": "", "end_date": ""}
+
+    if range_value == "custom":
+        start_raw = args.get("start_date", "")
+        end_raw = args.get("end_date", "")
+        try:
+            start_dt = datetime.strptime(start_raw, "%Y-%m-%d")
+            end_dt = datetime.strptime(end_raw, "%Y-%m-%d")
+        except ValueError:
+            flash("Invalid date range. Showing all transactions instead.")
+            return None, None, {"range": "", "start_date": "", "end_date": ""}
+
+        if start_dt > end_dt:
+            flash("Start date must be before end date. Showing all transactions instead.")
+            return None, None, {"range": "", "start_date": "", "end_date": ""}
+
+        return start_raw, end_raw, {"range": "custom", "start_date": start_raw, "end_date": end_raw}
+
+    return None, None, {"range": "", "start_date": "", "end_date": ""}
+
+
 @app.route("/profile")
 def profile():
     if not session.get("user_id"):
@@ -135,7 +170,8 @@ def profile():
         "member_since": _format_member_since(db_user["created_at"]),
     }
 
-    expense_rows = get_expenses_by_user(user_id)
+    start_date, end_date, filters = _resolve_date_range(request.args)
+    expense_rows = get_expenses_by_user(user_id, start_date=start_date, end_date=end_date)
     stats = get_expense_stats(expense_rows)
     category_breakdown = get_category_breakdown(expense_rows)
     transactions = [
@@ -154,6 +190,7 @@ def profile():
         stats=stats,
         transactions=transactions,
         category_breakdown=category_breakdown,
+        filters=filters,
     )
 
 

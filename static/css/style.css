@@ -765,6 +765,71 @@ a { color: inherit; text-decoration: none; }
     margin-bottom: 1rem;
 }
 
+.profile-filter-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-pills {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-pill {
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    background: var(--paper-warm);
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.filter-pill.is-active {
+    background: var(--accent);
+    color: var(--paper-card);
+}
+
+.filter-custom-range {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.filter-custom-range .form-input {
+    width: auto;
+}
+
+.filter-to {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+}
+
+.filter-apply {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+}
+
+.filter-clear {
+    padding: 0.5rem 1.1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+}
+
+.profile-filter-error {
+    margin-bottom: 1.5rem;
+}
+
 .profile-history-row {
     display: grid;
     grid-template-columns: 2fr 1fr;
@@ -809,6 +874,12 @@ a { color: inherit; text-decoration: none; }
 .profile-table-amount-col {
     font-weight: 500;
     color: var(--ink);
+}
+
+.profile-table-empty {
+    text-align: center;
+    color: var(--ink-muted);
+    padding: 1.5rem 1.25rem;
 }
 
 .profile-history-col { min-width: 0; }
@@ -857,6 +928,9 @@ a { color: inherit; text-decoration: none; }
 
     .profile-stats-row { grid-template-columns: 1fr; }
     .profile-history-row { grid-template-columns: 1fr; }
+    .profile-filter-toolbar { flex-direction: column; align-items: stretch; }
+    .filter-pills { justify-content: center; }
+    .filter-custom-range { justify-content: center; flex-wrap: wrap; }
 }
 
 @media (max-width: 600px) {

@@ -7,6 +7,12 @@
 <section class="profile-section">
     <div class="profile-container">
 
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+            <div class="auth-error profile-filter-error">{{ messages[0] }}</div>
+            {% endif %}
+        {% endwith %}
+
         <div class="auth-card profile-info-card">
             <div class="profile-avatar">{{ user.initials }}</div>
             <div class="profile-info-text">
@@ -15,6 +21,22 @@
                 <p class="profile-member-since">Member since {{ user.member_since }}</p>
             </div>
         </div>
+
+        <form method="get" action="{{ url_for('profile') }}" class="profile-filter-toolbar">
+            <div class="filter-pills">
+                <button type="submit" name="range" value="" class="filter-pill {% if not filters.range %}is-active{% endif %}">All Time</button>
+                <button type="submit" name="range" value="this_month" class="filter-pill {% if filters.range == "this_month" %}is-active{% endif %}">This Month</button>
+                <button type="submit" name="range" value="3m" class="filter-pill {% if filters.range == "3m" %}is-active{% endif %}">Last 3 Months</button>
+                <button type="submit" name="range" value="6m" class="filter-pill {% if filters.range == "6m" %}is-active{% endif %}">Last 6 Months</button>
+            </div>
+            <div class="filter-custom-range">
+                <input type="date" name="start_date" class="form-input" value="{{ filters.start_date }}">
+                <span class="filter-to">to</span>
+                <input type="date" name="end_date" class="form-input" value="{{ filters.end_date }}">
+                <button type="submit" name="range" value="custom" class="btn-primary filter-apply">Apply</button>
+                <a href="{{ url_for('profile') }}" class="btn-ghost filter-clear">Clear</a>
+            </div>
+        </form>
 
         <div class="profile-stats-row">
             <div class="feature-card profile-stat-card">
@@ -51,6 +73,10 @@
                                 <td>{{ tx.description }}</td>
                                 <td><span class="category-badge cat-{{ tx.category|lower }}">{{ tx.category }}</span></td>
                                 <td class="profile-table-amount-col">₹{{ "%.2f"|format(tx.amount) }}</td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="4" class="profile-table-empty">No transactions in this range.</td>
                             </tr>
                             {% endfor %}
                         </tbody>

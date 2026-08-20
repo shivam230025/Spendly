@@ -69,11 +69,12 @@ def insert_expense(user_id, amount, category, date_str, description):
     """
     conn = db.get_db()
     try:
-        conn.execute(
+        cursor = conn.execute(
             "INSERT INTO expenses (user_id, amount, category, date, description) "
             "VALUES (?, ?, ?, ?, ?)",
             (user_id, amount, category, date_str, description),
         )
         conn.commit()
+        return cursor.lastrowid
     finally:
         conn.close()

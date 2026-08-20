@@ -14,6 +14,7 @@ from database.db import (
     get_user_by_id,
     get_expense_by_id,
     update_expense,
+    delete_expense_by_id,
     get_expenses_by_user,
     get_expense_stats,
     get_category_breakdown,
@@ -302,9 +303,19 @@ def edit_expense(id):
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/<int:id>/delete")
+@app.route("/expenses/<int:id>/delete", methods=["POST"])
 def delete_expense(id):
-    return "Delete expense — coming in Step 9"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if expense is None or expense["user_id"] != session["user_id"]:
+        abort(404)
+
+    delete_expense_by_id(id)
+
+    flash("Expense deleted successfully.", "danger")
+    return redirect(url_for("profile"))
 
 
 with app.app_context():

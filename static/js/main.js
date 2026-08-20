@@ -37,3 +37,17 @@
         if (event.key === "Escape" && overlay.classList.contains("is-open")) closeModal();
     });
 })();
+
+// ------------------------------------------------------------------ //
+// Confirm before deleting an expense                                  //
+// ------------------------------------------------------------------ //
+
+(function () {
+    document.querySelectorAll(".delete-expense-form").forEach(function (form) {
+        form.addEventListener("submit", function (event) {
+            if (!window.confirm("Delete this expense? This cannot be undone.")) {
+                event.preventDefault();
+            }
+        });
+    });
+})();

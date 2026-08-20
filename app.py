@@ -12,6 +12,8 @@ from database.db import (
     create_expense,
     get_user_by_email,
     get_user_by_id,
+    get_expense_by_id,
+    update_expense,
     get_expenses_by_user,
     get_expense_stats,
     get_category_breakdown,
@@ -179,6 +181,7 @@ def profile():
     category_breakdown = get_category_breakdown(expense_rows)
     transactions = [
         {
+            "id": row["id"],
             "date": row["date"],
             "description": row["description"],
             "category": row["category"],
@@ -243,9 +246,60 @@ def add_expense():
     return redirect(url_for("profile"))
 
 
-@app.route("/expenses/<int:id>/edit")
+@app.route("/expenses/<int:id>/edit", methods=["GET", "POST"])
 def edit_expense(id):
-    return "Edit expense — coming in Step 8"
+    if not session.get("user_id"):
+        return redirect(url_for("login"))
+
+    expense = get_expense_by_id(id)
+    if expense is None or expense["user_id"] != session["user_id"]:
+        abort(404)
+
+    if request.method == "GET":
+        values = {
+            "amount": expense["amount"],
+            "category": expense["category"],
+            "date": expense["date"],
+            "description": expense["description"] or "",
+        }
+        return render_template("edit_expense.html", id=id, categories=VALID_CATEGORIES, values=values)
+
+    amount_raw = request.form.get("amount", "").strip()
+    category = request.form.get("category", "").strip()
+    date_raw = request.form.get("date", "").strip()
+    description = request.form.get("description", "").strip()
+
+    form_values = {
+        "amount": amount_raw,
+        "category": category,
+        "date": date_raw,
+        "description": description,
+    }
+
+    try:
+        amount = float(amount_raw)
+    except ValueError:
+        flash("Amount must be a valid number.")
+        return render_template("edit_expense.html", id=id, categories=VALID_CATEGORIES, values=form_values)
+
+    if amount <= 0:
+        flash("Amount must be greater than zero.")
+        return render_template("edit_expense.html", id=id, categories=VALID_CATEGORIES, values=form_values)
+
+    if category not in VALID_CATEGORIES:
+        flash("Please select a valid category.")
+        return render_template("edit_expense.html", id=id, categories=VALID_CATEGORIES, values=form_values)
+
+    try:
+        datetime.strptime(date_raw, "%Y-%m-%d")
+    except ValueError:
+        flash("Please enter a valid date.")
+        return render_template("edit_expense.html", id=id, categories=VALID_CATEGORIES, values=form_values)
+
+    update_expense(id, amount, category, date_raw, description or None)
+
+    flash("Expense updated successfully.", "success")
+    return redirect(url_for("profile"))
 
 
 @app.route("/expenses/<int:id>/delete")

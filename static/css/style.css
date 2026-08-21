@@ -748,6 +748,10 @@ a { color: inherit; text-decoration: none; }
     margin-bottom: 2rem;
 }
 
+.profile-info-card .nav-cta {
+    margin-left: auto;
+}
+
 .profile-avatar {
     width: 64px;
     height: 64px;
@@ -992,9 +996,17 @@ a { color: inherit; text-decoration: none; }
     .profile-filter-toolbar { flex-direction: column; align-items: stretch; }
     .filter-pills { justify-content: center; }
     .filter-custom-range { justify-content: center; flex-wrap: wrap; }
+
+    .profile-info-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    .profile-info-card .nav-cta {
+        margin-left: 0;
+    }
 }
 
 @media (max-width: 600px) {
-    .nav-links a:not(.nav-cta) { display: none; }
+    .nav-links a.nav-hide-mobile { display: none; }
     .hero { padding: 3rem 1rem 2rem; }
 }

@@ -351,6 +351,32 @@ a { color: inherit; text-decoration: none; }
     color: var(--ink);
 }
 
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: transparent;
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon-edit:hover {
+    border-color: var(--ink);
+    color: var(--ink);
+    background: var(--paper-warm);
+}
+
+.btn-icon-delete:hover {
+    border-color: var(--danger);
+    color: var(--danger);
+    background: var(--danger-light);
+}
+
 /* ------------------------------------------------------------------ */
 /* Features section                                                    */
 /* ------------------------------------------------------------------ */
